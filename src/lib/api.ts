@@ -57,9 +57,11 @@ export async function getAllUsers(
   const response = await databases.listDocuments(
     DATABASE_ID,
     USERS_COLLECTION_ID,
-    [Query.notEqual("userId", currentUserId), Query.limit(100)]
+    [Query.limit(100)]
   );
-  return response.documents as unknown as UserProfile[];
+  return (response.documents as unknown as UserProfile[]).filter(
+    (u) => u.userId !== currentUserId && u.$id !== currentUserId
+  );
 }
 
 // ─── Messages ─────────────────────────────────────────────────────────────
