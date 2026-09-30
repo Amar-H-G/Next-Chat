@@ -723,28 +723,47 @@
     line-height: 1.5;
   }
 
+  /* Message row container */
+  .message-row {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.35rem;
+  }
+
+  .message-row.sent {
+    align-items: flex-end;
+  }
+
+  .message-row.received {
+    align-items: flex-start;
+  }
+
   /* Message bubble groups */
   .message-group {
     display: flex;
     flex-direction: column;
-    max-width: 72%;
+    max-width: 68%;
     animation: fadeIn 0.2s ease-out;
   }
 
   .message-group.sent {
     align-self: flex-end;
     align-items: flex-end;
+    margin-left: auto;
   }
 
   .message-group.received {
     align-self: flex-start;
     align-items: flex-start;
+    margin-right: auto;
   }
 
   .message-sender-label {
     font-size: 0.75rem;
-    color: var(--text-muted);
-    margin-bottom: 0.2rem;
+    font-weight: 600;
+    color: var(--accent-secondary);
+    margin-bottom: 0.25rem;
     padding: 0 0.5rem;
   }
 

@@ -37,7 +37,10 @@ export function MessageList({ messages, currentUserId }: MessageListProps) {
         const isSent = msg.senderId === currentUserId;
 
         return (
-          <div key={msg.$id}>
+          <div
+            key={msg.$id}
+            className={`message-row ${isSent ? "sent" : "received"}`}
+          >
             {showDate && (
               <div className="day-separator">
                 <div className="day-separator-line" />
