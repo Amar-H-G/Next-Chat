@@ -59,6 +59,7 @@ export default function ChatPage() {
   // Subscribe globally to track unread messages in background conversations
   useEffect(() => {
     if (!user) return;
+
     const channel = `databases.${DATABASE_ID}.collections.${MESSAGES_COLLECTION_ID}.documents`;
 
     const unsubscribe = client.subscribe<Message>(
@@ -66,22 +67,40 @@ export default function ChatPage() {
       (response: RealtimeResponseEvent<Message>) => {
         if (
           response.events.includes(
-            "databases.*.collections.*.documents.*.create"
+            "databases.*.collections.*.documents.*.create",
           )
         ) {
           const msg = response.payload;
-          // Only count messages sent TO the current user
+
+          // Only process messages sent to the current user
           if (msg.receiverId !== user.$id) return;
-          // Don't count if this conversation is currently open
-          if (selectedUser && msg.senderId === selectedUser.userId) return;
-          // Increment unread for the sender
-          setUnreadCounts((prev) => ({
-            ...prev,
-            [msg.senderId]: (prev[msg.senderId] ?? 0) + 1,
-          }));
+
+          // Move the sender to the top of the sidebar
+          setUsers((prevUsers) => {
+            const sender = prevUsers.find((u) => u.userId === msg.senderId);
+
+            if (!sender) return prevUsers;
+
+            return [
+              sender,
+              ...prevUsers.filter((u) => u.userId !== msg.senderId),
+            ];
+          });
+
+          // Only increment unread count if this conversation
+          // is not currently open
+          const isCurrentConversation = selectedUser?.userId === msg.senderId;
+
+          if (!isCurrentConversation) {
+            setUnreadCounts((prev) => ({
+              ...prev,
+              [msg.senderId]: (prev[msg.senderId] ?? 0) + 1,
+            }));
+          }
         }
-      }
+      },
     );
+
     return () => unsubscribe();
   }, [user, selectedUser]);
 
@@ -154,8 +173,8 @@ export default function ChatPage() {
           {loadingUsers
             ? "Loading…"
             : usersError
-            ? "Contacts"
-            : `${users.length} Contact${users.length !== 1 ? "s" : ""}`}
+              ? "Contacts"
+              : `${users.length} Contact${users.length !== 1 ? "s" : ""}`}
         </div>
 
         {/* Users list */}
@@ -183,7 +202,10 @@ export default function ChatPage() {
             </div>
           ) : users.length === 0 ? (
             <div className="empty-users">
-              <div aria-hidden="true" style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>
+              <div
+                aria-hidden="true"
+                style={{ fontSize: "2rem", marginBottom: "0.5rem" }}
+              >
                 😶
               </div>
               No other users registered yet.
@@ -248,7 +270,9 @@ export default function ChatPage() {
             <div className="no-conversation-icon" aria-hidden="true">
               💬
             </div>
-            <div className="no-conversation-title">No conversation selected</div>
+            <div className="no-conversation-title">
+              No conversation selected
+            </div>
             <div className="no-conversation-text">
               Choose a contact from the sidebar to start a real-time
               conversation.
